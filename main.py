@@ -1,8 +1,9 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from python_dotenv import load_dotenv
 import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+from dotenv import load_dotenv
 
 # SMTP server parameters / Параметры SMTP-сервера
 load_dotenv()
@@ -12,9 +13,7 @@ smtp_password = os.getenv('SMTP_PASSWORD')
 smtp_port = 587  # SMTP server port / Порт SMTP-сервера
 
 # Email parameters / Параметры письма
-sender = 'AVDS-info.mk7@zdrav.mos.ru'  # Sender's address / Адрес отправителя
-subject = 'Сюда тема.'  # Email subject / Тема письма
-body = 'Сюда основной текст.'  # Email text / Текст письма
+sender = os.getenv('SENDER')  # Sender's address / Адрес отправителя
 
 with open('emails.txt', 'r') as f:  # File with email addresses / Файл с адресами электронной почты
     receivers = f.read().splitlines()
@@ -25,6 +24,10 @@ for receiver in receivers:
         message = MIMEMultipart()
         message['From'] = sender
         message['To'] = receiver
+        with open('mail.txt', 'r', encoding='utf-8') as mail_file:
+            lines = mail_file.readlines()
+            subject = lines[0].strip()  # Subject of the email from first line / Тема письма из первой строки
+            body = ''.join(lines[1:]).strip()  # Body of the email from the second line to end of the file / Тело письма от первой строки до конца файла
         message['Subject'] = subject
 
         # Adding the email text / Добавление текста письма
@@ -45,4 +48,6 @@ for receiver in receivers:
     finally:
     # Ending the connection with the server / Завершение соединения с сервером
         server.quit()
-        
+
+with open('emails.txt', 'r') as f:  # File with email addresses / Файл с адресами электронной почты
+    receivers = f.read().splitlines()
